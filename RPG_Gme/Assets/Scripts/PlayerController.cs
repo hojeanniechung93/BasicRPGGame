@@ -7,6 +7,7 @@ public class PlayerController : MonoBehaviour {
     Camera cam;
     public LayerMask movementMask;
     PlayerMotor motor;
+    public Interactable focus;
 
 	// Use this for initialization
 	void Start () {
@@ -26,6 +27,7 @@ public class PlayerController : MonoBehaviour {
                 //Move our player to where we hit
                 motor.MoveToPoint(hit.point);
                 //Stop focusing any objects
+                RemoveFocus();
             }
         }
 
@@ -36,9 +38,40 @@ public class PlayerController : MonoBehaviour {
 
             if (Physics.Raycast(ray, out hit, 100))
             {
-                //Check if we hit an interactable, if we did, set it as our focus
+                Interactable interactable =  hit.collider.GetComponent<Interactable>();
+                if (interactable != null)
+                {
+                    SetFocus(interactable);
+                }
 
             }
         }
+
+    }
+    void SetFocus(Interactable newFocus)
+    {
+        if(newFocus != focus)
+        {
+            if (focus != null)
+            {
+                focus.OnDefocused();
+  
+            }
+            focus = newFocus;
+            motor.FollowTarget(newFocus);
+
+        }
+
+        newFocus.OnFocused(transform);
+
+    }
+    void RemoveFocus()
+    {
+        if (focus!=null){
+            focus.OnDefocused();
+            
+        }
+        focus = null;
+        motor.StopFollowingTarget();
     }
 }
